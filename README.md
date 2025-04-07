@@ -15,6 +15,7 @@ Originally built for my own Go backend project, so the file structure might feel
 5. `./dbox init` — initialize the database and `.env` file
 6. `./dbox clean` — remove migration records in the DB with no matching folder
 7. `./dbox refresh` — roll back everything and run all migrations from scratch
+8. `./dbox status` - view the status of all migrations
 
 ---
 

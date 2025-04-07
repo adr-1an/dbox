@@ -1,21 +1,50 @@
 # DBox - DB Toolbox
-## A simple migration manager written in Go.
 
-Originally custom-made for my own Go backend project, so the file structure might be a bit weird.
+**A simple migration manager written in Go.**
 
-# Setup:
-**Make sure you have [Go installed](https://go.dev/doc/install).**
+Originally built for my own Go backend project, so the file structure might feel a bit custom.
 
-Clone this repo, then build it:
-```
+---
+
+## ✨ Features
+
+1. `./dbox make [name]` or `./dbox create [name]` — create a new migration
+2. `./dbox up` or `./dbox migrate` — run all pending migrations
+3. `./dbox migrate --pretend` or `./dbox rollback --pretend` — show SQL that would run, without touching the DB (`-p` for short)
+4. `./dbox down` or `./dbox rollback` — roll back the last migration
+5. `./dbox init` — initialize the database and `.env` file
+6. `./dbox clean` — remove migration records in the DB with no matching folder
+7. `./dbox refresh` — roll back everything and run all migrations from scratch
+
+---
+
+## ⚙️ How it works
+
+Instead of a single file per migration, DBox creates a **folder** for each one  
+Each folder contains two files: `up.sql` and `down.sql`
+
+- `up.sql` → raw SQL that runs when you migrate
+- `down.sql` → SQL that runs when you roll back
+
+No extra syntax or parsing — just clean SQL
+
+---
+
+## 🛠️ Setup
+
+**Make sure you have [Go installed](https://go.dev/doc/install)**
+
+Then:
+
+```bash
+git clone https://github.com/your-username/dbox.git
+cd dbox
 go build dbox.go
 ```
-If you're missing any packages, just run:
+If anything's missing, install dependencies:
 ```
 go mod tidy
 ```
-It'll install everything you need.
-
 That's it.
 
-### **Enjoy!**
+### Enjoy!

@@ -39,7 +39,7 @@ No extra syntax or parsing — just clean SQL
 Then:
 
 ```bash
-git clone https://github.com/your-username/dbox.git
+git clone https://github.com/adr-1an/dbox.git
 cd dbox
 go build dbox.go
 ```

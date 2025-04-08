@@ -67,7 +67,7 @@ func main() {
 		fmt.Println("./dbox create [migration_name] - Creates a migration with the specified name.")
 		fmt.Println("./dbox migrate - Run all migrations.\n    --pretend (-p for short) - shows the SQL that would run, but doesn't execute it\n       --dry-run achieves the same result.")
 		fmt.Println("./dbox rollback - Roll the last migration back.")
-		fmt.Println("./dbox refresh - Re-run all migrations' up and down methods.")
+		fmt.Println("./dbox refresh - Re-run all migrations from scratch.")
 		fmt.Println("./dbox clean - Deletes all migration registries that don't have a corresponding directory.")
 		fmt.Println("./dbox init - Initializes the main file structure:\n    - Creates db/ and db/migrations")
 	default:

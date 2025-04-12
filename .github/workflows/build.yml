@@ -15,10 +15,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -27,3 +29,21 @@ jobs:
           args: build --clean --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbox_linux_amd64
+          path: dist/dbox_linux_amd64_v1/dbox
+
+      - name: Upload macOS binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbox_darwin_amd64
+          path: dist/dbox_darwin_amd64_v1/dbox
+
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbox_windows_amd64
+          path: dist/dbox_windows_amd64_v1/dbox.exe

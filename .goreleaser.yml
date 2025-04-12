@@ -1,0 +1,27 @@
+builds:
+  - main: .
+    binary: dbox
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+archives:
+  - format: tar.gz
+    wrap_in_directory: false
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      pgrokd_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    # use zip for windows archives
+    format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'checksums.pgrokd.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  disable: true

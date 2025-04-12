@@ -41,10 +41,11 @@ Then:
 ```bash
 git clone https://github.com/adr-1an/dbox.git
 cd dbox
-go build dbox.go
+go build
 ```
 If anything's missing, install dependencies:
 ```
+go get -u
 go mod tidy
 ```
 That's it.

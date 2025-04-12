@@ -1,11 +1,12 @@
 package main
 
 import (
-	"app/utils/dbox"
+	"dbox/utils/dbox"
 	"fmt"
+	"os"
+
 	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
-	"os"
 )
 
 func main() {
@@ -62,7 +63,7 @@ func main() {
 		dbox.Init(dbType, dsn)
 
 	case "help", "?":
-		fmt.Println("DBox - DB Toolbox\n")
+		fmt.Println("DBox - DB Toolbox")
 		fmt.Println("./dbox help - Shows this menu.")
 		fmt.Println("./dbox create [migration_name] - Creates a migration with the specified name.")
 		fmt.Println("./dbox migrate - Run all migrations.\n    --pretend (-p for short) - shows the SQL that would run, but doesn't execute it\n       --dry-run achieves the same result.")

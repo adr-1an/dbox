@@ -41,7 +41,8 @@ func Migrate(dbType, dsn string, pretend bool) {
 		migrationName := entry.Name()
 
 		var exists string
-		err := db.QueryRow("SELECT name FROM migrations WHERE name = ?", migrationName).Scan(&exists)
+		query := fmt.Sprintf("SELECT name FROM migrations WHERE name = %s", placeholder(dbType, 1))
+		err := db.QueryRow(query, migrationName).Scan(&exists)
 		if err != nil && err != sql.ErrNoRows {
 			fmt.Println("DB error:", err)
 			os.Exit(1)
@@ -70,7 +71,8 @@ func Migrate(dbType, dsn string, pretend bool) {
 			}
 		}
 
-		_, err = db.Exec("INSERT INTO migrations (name) VALUES (?)", migrationName)
+		insert := fmt.Sprintf("INSERT INTO migrations (name) VALUES (%s)", placeholder(dbType, 1))
+		_, err = db.Exec(insert, migrationName)
 		if err != nil {
 			fmt.Println("Failed to record migration:", migrationName)
 			os.Exit(1)

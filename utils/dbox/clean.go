@@ -52,7 +52,8 @@ func Clean(dbType, dsn string) {
 
 		_, err := os.Stat(path)
 		if os.IsNotExist(err) {
-			_, err := db.Exec("DELETE FROM migrations WHERE name = ?", name)
+			del := fmt.Sprintf("DELETE FROM migrations WHERE name = %s", placeholder(dbType, 1))
+			_, err := db.Exec(del, name)
 			if err != nil {
 				fmt.Println("Failed to delete migration record:", err)
 				os.Exit(1)

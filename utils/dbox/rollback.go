@@ -45,7 +45,8 @@ func Rollback(dbType, dsn string, pretend bool) {
 		os.Exit(1)
 	}
 
-	_, err = db.Exec("DELETE FROM migrations WHERE name = ?", latest)
+	del := fmt.Sprintf("DELETE FROM migrations WHERE name = %s", placeholder(dbType, 1))
+	_, err = db.Exec(del, latest)
 	if err != nil {
 		fmt.Println("Failed to remove migration record:", latest)
 		os.Exit(1)

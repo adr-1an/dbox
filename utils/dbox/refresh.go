@@ -46,7 +46,7 @@ func Refresh(dbType, dsn string, pretend bool) {
 	db.Close()
 
 	for _, name := range names {
-		db, err := sql.Open("sqlite", "db/database.sqlite")
+		db, err := sql.Open(dbType, dsn)
 		if err != nil {
 			fmt.Println("Failed to connect to DB:", err)
 			os.Exit(1)
@@ -67,7 +67,8 @@ func Refresh(dbType, dsn string, pretend bool) {
 			os.Exit(1)
 		}
 
-		_, err = db.Exec("DELETE FROM migrations WHERE name = ?", name)
+		del := fmt.Sprintf("DELETE FROM migrations WHERE name = %s", placeholder(dbType, 1))
+		_, err = db.Exec(del, name)
 		if err != nil {
 			fmt.Println("Failed to delete migration record:", name)
 			db.Close()

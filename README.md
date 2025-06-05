@@ -4,7 +4,7 @@
 
 Originally built for my own Go backend project, so the file structure might feel a bit custom.
 
-### Built-in support for MySQL, PostgreSQL, and SQLite
+### Built-in support for MySQL, PostgreSQL, SQLite, and CQL (ScyllaDB/Cassandra)
 ---
 
 ## ✨ Features

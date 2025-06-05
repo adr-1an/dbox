@@ -41,23 +41,38 @@ func Init(dbType, dsn string) {
 	fmt.Scanln(&input)
 	input = strings.ToLower(input)
 	if input == "yes" {
-		db, err := sql.Open(dbType, dsn)
-		if err != nil {
-			fmt.Println("Failed to connect to db:", err)
-			os.Exit(1)
-		}
-		defer db.Close()
+		if dbType == "cql" {
+			session, err := openCQLSession()
+			if err != nil {
+				fmt.Println("Failed to connect to db:", err)
+				os.Exit(1)
+			}
+			defer session.Close()
 
-		_, err = db.Exec(`
-			CREATE TABLE IF NOT EXISTS migrations (
-			    name VARCHAR(255) PRIMARY KEY
-			)
-		`)
-		if err != nil {
-			fmt.Println("Failed to create migration table:", err)
-			os.Exit(1)
+			if err := session.Query(`CREATE TABLE IF NOT EXISTS migrations (name text PRIMARY KEY)`).Exec(); err != nil {
+				fmt.Println("Failed to create migration table:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Migration records table created.")
+		} else {
+			db, err := sql.Open(dbType, dsn)
+			if err != nil {
+				fmt.Println("Failed to connect to db:", err)
+				os.Exit(1)
+			}
+			defer db.Close()
+
+			_, err = db.Exec(`
+                                CREATE TABLE IF NOT EXISTS migrations (
+                                    name VARCHAR(255) PRIMARY KEY
+                                )
+                        `)
+			if err != nil {
+				fmt.Println("Failed to create migration table:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Migration records table created.")
 		}
-		fmt.Println("Migration records table created.")
 	}
 
 	fmt.Println("Initialized DBox project.")

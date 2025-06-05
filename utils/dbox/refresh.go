@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -17,6 +18,60 @@ func Refresh(dbType, dsn string, pretend bool) {
 	if input != "yes" {
 		fmt.Println("Canceled.")
 		os.Exit(0)
+	}
+
+	if dbType == "cql" {
+		session, err := openCQLSession()
+		if err != nil {
+			fmt.Println("Failed to connect to DB:", err)
+			os.Exit(1)
+		}
+
+		iter := session.Query("SELECT name FROM migrations").Iter()
+		var names []string
+		var n string
+		for iter.Scan(&n) {
+			names = append(names, n)
+		}
+		if err := iter.Close(); err != nil {
+			fmt.Println("Failed to fetch migrations:", err)
+			session.Close()
+			os.Exit(1)
+		}
+		session.Close()
+
+		sort.Sort(sort.Reverse(sort.StringSlice(names)))
+
+		for _, name := range names {
+			sess, err := openCQLSession()
+			if err != nil {
+				fmt.Println("Failed to connect to DB:", err)
+				os.Exit(1)
+			}
+			downPath := "db/migrations/" + name + "/down.sql"
+			sqlBytes, err := os.ReadFile(downPath)
+			if err != nil {
+				fmt.Println("Failed to read:", downPath)
+				sess.Close()
+				os.Exit(1)
+			}
+			if err := sess.Query(string(sqlBytes)).Exec(); err != nil {
+				fmt.Println("Failed to rollback:", name)
+				fmt.Println("Error:", err)
+				sess.Close()
+				os.Exit(1)
+			}
+			if err := sess.Query("DELETE FROM migrations WHERE name = ?", name).Exec(); err != nil {
+				fmt.Println("Failed to delete migration record:", name)
+				sess.Close()
+				os.Exit(1)
+			}
+			sess.Close()
+			fmt.Println("Rolled back:", name)
+		}
+
+		Migrate(dbType, dsn, pretend)
+		return
 	}
 
 	db, err := sql.Open(dbType, dsn)

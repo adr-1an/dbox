@@ -16,7 +16,7 @@ func main() {
 	}
 
 	if os.Getenv("DB_TYPE") == "" {
-		fmt.Println("You need to set DB_TYPE in your .env file (sqlite, mysql, or postgres)")
+		fmt.Println("You need to set DB_TYPE in your .env file (sqlite, mysql, postgres, or cql)")
 		os.Exit(1)
 	}
 
@@ -99,6 +99,13 @@ func BuildDSN(dbType string) string {
 
 	case "sqlite":
 		return os.Getenv("DB_DATABASE")
+
+	case "cql":
+		return fmt.Sprintf("%s:%s/%s",
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
+			os.Getenv("DB_NAME"),
+		)
 
 	default:
 		fmt.Println("Unsupported DB_TYPE:", dbType)

@@ -1,12 +1,15 @@
 package main
 
 import (
-	"dbox/utils/dbox"
-	"fmt"
-	"os"
+        "bufio"
+        "database/sql"
+        "dbox/utils/dbox"
+        "fmt"
+        "os"
+        "strings"
 
-	"github.com/joho/godotenv"
-	_ "modernc.org/sqlite"
+        "github.com/joho/godotenv"
+        _ "modernc.org/sqlite"
 )
 
 func main() {
@@ -20,18 +23,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	pretend := false
-	for _, arg := range os.Args {
-		if arg == "--pretend" || arg == "--dry-run" || arg == "-p" {
-			pretend = true
-			break
-		}
-	}
-
-	// Get settings from .env
-	godotenv.Load()
-	dbType := os.Getenv("DB_TYPE")
-	dsn := BuildDSN(dbType)
+        // Get settings from .env
+        godotenv.Load()
+        dbType := os.Getenv("DB_TYPE")
+        dsn := BuildDSN(dbType)
 
 	if os.Getenv("DBOX_TYPE") == "console" {
 		runConsole(dbType, dsn)

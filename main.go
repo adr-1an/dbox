@@ -25,8 +25,8 @@ func main() {
 
         // Get settings from .env
         godotenv.Load()
-        dbType := os.Getenv("DB_TYPE")
-        dsn := BuildDSN(dbType)
+        dbType = os.Getenv("DB_TYPE")
+        dsn = BuildDSN(dbType)
 
 
 	// Get settings from .env file

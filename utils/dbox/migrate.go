@@ -14,12 +14,12 @@ func Migrate(dbType, dsn string, pretend bool) {
 		os.Mkdir("db", 0755)
 	}
 	if dbType == "cql" {
-		session, err := openCQLSession()
+		session, cleanup, err := cqlConn()
 		if err != nil {
 			fmt.Println("Failed to connect to DB:", err)
 			os.Exit(1)
 		}
-		defer session.Close()
+		defer cleanup()
 
 		if err := session.Query(`CREATE TABLE IF NOT EXISTS migrations (name text PRIMARY KEY)`).Exec(); err != nil {
 			fmt.Println("Failed to create migrations table:", err)
@@ -78,11 +78,11 @@ func Migrate(dbType, dsn string, pretend bool) {
 		return
 	}
 
-	db, err := sql.Open(dbType, dsn)
+	db, cleanup, err := sqlConn(dbType, dsn)
 	if err != nil {
 		fmt.Println("Failed to connect to DB:", err)
 	}
-	defer db.Close()
+	defer cleanup()
 
 	createTable := `
                        CREATE TABLE IF NOT EXISTS migrations (

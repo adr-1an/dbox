@@ -1,7 +1,6 @@
 package dbox
 
 import (
-	"database/sql"
 	"fmt"
 	_ "github.com/ClickHouse/clickhouse-go/v2"
 	_ "github.com/go-sql-driver/mysql"

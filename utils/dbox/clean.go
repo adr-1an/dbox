@@ -1,7 +1,6 @@
 package dbox
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"strings"

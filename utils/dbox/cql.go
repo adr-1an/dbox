@@ -7,7 +7,7 @@ import (
 	"github.com/gocql/gocql"
 )
 
-func openCQLSession() (*gocql.Session, error) {
+func OpenCQLSession() (*gocql.Session, error) {
 	host := os.Getenv("DB_HOST")
 	portStr := os.Getenv("DB_PORT")
 	port, _ := strconv.Atoi(portStr)

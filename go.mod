@@ -5,11 +5,12 @@ go 1.23.0
 toolchain go1.23.8
 
 require (
-        github.com/go-sql-driver/mysql v1.9.1
-        github.com/joho/godotenv v1.5.1
-        github.com/lib/pq v1.10.9
-        github.com/gocql/gocql v1.0.0
-        modernc.org/sqlite v1.37.0
+	github.com/go-sql-driver/mysql v1.9.1
+	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
+	github.com/ClickHouse/clickhouse-go/v2 v2.11.0
+	github.com/gocql/gocql v1.0.0
+	modernc.org/sqlite v1.37.0
 )
 
 require (

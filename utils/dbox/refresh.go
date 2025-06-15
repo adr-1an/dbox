@@ -1,7 +1,6 @@
 package dbox
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"sort"
@@ -21,11 +20,12 @@ func Refresh(dbType, dsn string, pretend bool) {
 	}
 
 	if dbType == "cql" {
-		session, err := openCQLSession()
+		session, cleanup, err := cqlConn()
 		if err != nil {
 			fmt.Println("Failed to connect to DB:", err)
 			os.Exit(1)
 		}
+		defer cleanup()
 
 		iter := session.Query("SELECT name FROM migrations").Iter()
 		var names []string
@@ -35,15 +35,13 @@ func Refresh(dbType, dsn string, pretend bool) {
 		}
 		if err := iter.Close(); err != nil {
 			fmt.Println("Failed to fetch migrations:", err)
-			session.Close()
 			os.Exit(1)
 		}
-		session.Close()
 
 		sort.Sort(sort.Reverse(sort.StringSlice(names)))
 
 		for _, name := range names {
-			sess, err := openCQLSession()
+			sess, cqlCleanup, err := cqlConn()
 			if err != nil {
 				fmt.Println("Failed to connect to DB:", err)
 				os.Exit(1)
@@ -52,21 +50,21 @@ func Refresh(dbType, dsn string, pretend bool) {
 			sqlBytes, err := os.ReadFile(downPath)
 			if err != nil {
 				fmt.Println("Failed to read:", downPath)
-				sess.Close()
+				cqlCleanup()
 				os.Exit(1)
 			}
 			if err := sess.Query(string(sqlBytes)).Exec(); err != nil {
 				fmt.Println("Failed to rollback:", name)
 				fmt.Println("Error:", err)
-				sess.Close()
+				cqlCleanup()
 				os.Exit(1)
 			}
 			if err := sess.Query("DELETE FROM migrations WHERE name = ?", name).Exec(); err != nil {
 				fmt.Println("Failed to delete migration record:", name)
-				sess.Close()
+				cqlCleanup()
 				os.Exit(1)
 			}
-			sess.Close()
+			cqlCleanup()
 			fmt.Println("Rolled back:", name)
 		}
 
@@ -74,11 +72,12 @@ func Refresh(dbType, dsn string, pretend bool) {
 		return
 	}
 
-	db, err := sql.Open(dbType, dsn)
+	db, cleanup, err := sqlConn(dbType, dsn)
 	if err != nil {
 		fmt.Println("Failed to connect to DB:", err)
 		os.Exit(1)
 	}
+	defer cleanup()
 
 	rows, err := db.Query("SELECT name FROM migrations ORDER BY name DESC")
 	if err != nil {
@@ -98,10 +97,9 @@ func Refresh(dbType, dsn string, pretend bool) {
 	}
 
 	rows.Close()
-	db.Close()
 
 	for _, name := range names {
-		db, err := sql.Open(dbType, dsn)
+		db, c, err := sqlConn(dbType, dsn)
 		if err != nil {
 			fmt.Println("Failed to connect to DB:", err)
 			os.Exit(1)
@@ -118,7 +116,7 @@ func Refresh(dbType, dsn string, pretend bool) {
 		if err != nil {
 			fmt.Println("Failed to rollback:", name)
 			fmt.Println("Error:", err)
-			db.Close()
+			c()
 			os.Exit(1)
 		}
 
@@ -126,11 +124,11 @@ func Refresh(dbType, dsn string, pretend bool) {
 		_, err = db.Exec(del, name)
 		if err != nil {
 			fmt.Println("Failed to delete migration record:", name)
-			db.Close()
+			c()
 			os.Exit(1)
 		}
 
-		db.Close()
+		c()
 		fmt.Println("Rolled back:", name)
 	}
 	Migrate(dbType, dsn, pretend)

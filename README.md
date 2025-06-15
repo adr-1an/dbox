@@ -19,6 +19,7 @@ Originally built for my own Go backend project, so the file structure might feel
 8. `./dbox status` - view the status of all migrations
 
 ### Console mode
+
 Console mode allows you to type commands directly into DBox, while also
 reusing the same DB connection, making commands run way faster.
 To use console mode, add `DBOX_TYPE=console` to your `.env` file.

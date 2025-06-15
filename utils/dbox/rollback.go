@@ -9,12 +9,12 @@ import (
 
 func Rollback(dbType, dsn string, pretend bool) {
 	if dbType == "cql" {
-		session, err := openCQLSession()
+		session, cleanup, err := cqlConn()
 		if err != nil {
 			fmt.Println("Failed to connect to DB:", err)
 			os.Exit(1)
 		}
-		defer session.Close()
+		defer cleanup()
 
 		var names []string
 		iter := session.Query("SELECT name FROM migrations").Iter()
@@ -60,12 +60,12 @@ func Rollback(dbType, dsn string, pretend bool) {
 		return
 	}
 
-	db, err := sql.Open(dbType, dsn)
+	db, cleanup, err := sqlConn(dbType, dsn)
 	if err != nil {
 		fmt.Println("Failed to connect to DB:", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer cleanup()
 
 	var latest string
 	err = db.QueryRow("SELECT name FROM migrations ORDER BY name DESC LIMIT 1").Scan(&latest)

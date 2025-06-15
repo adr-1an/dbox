@@ -84,11 +84,15 @@ func Migrate(dbType, dsn string, pretend bool) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec(`
-			CREATE TABLE IF NOT EXISTS migrations (
-			    name TEXT PRIMARY KEY
-			)
-		`)
+	createTable := `
+                       CREATE TABLE IF NOT EXISTS migrations (
+                           name TEXT PRIMARY KEY
+                       )
+               `
+	if dbType == "clickhouse" {
+		createTable = `CREATE TABLE IF NOT EXISTS migrations (name String) ENGINE = MergeTree() ORDER BY name`
+	}
+	_, err = db.Exec(createTable)
 	if err != nil {
 		fmt.Println("Failed to create migrations table:", err)
 		os.Exit(1)

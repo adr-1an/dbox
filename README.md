@@ -28,7 +28,7 @@ Each folder contains two files: `up.sql` and `down.sql`
 - `up.sql` → raw SQL that runs when you migrate
 - `down.sql` → SQL that runs when you roll back
 
-No extra syntax or parsing — just clean SQL
+No extra syntax or parsing — just SQL.
 
 ---
 

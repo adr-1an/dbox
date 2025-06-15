@@ -3,6 +3,7 @@ package dbox
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/ClickHouse/clickhouse-go/v2"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"os"
@@ -62,11 +63,15 @@ func Init(dbType, dsn string) {
 			}
 			defer db.Close()
 
-			_, err = db.Exec(`
-                                CREATE TABLE IF NOT EXISTS migrations (
-                                    name VARCHAR(255) PRIMARY KEY
-                                )
-                        `)
+			query := `
+                               CREATE TABLE IF NOT EXISTS migrations (
+                                   name VARCHAR(255) PRIMARY KEY
+                               )
+                       `
+			if dbType == "clickhouse" {
+				query = "CREATE TABLE IF NOT EXISTS migrations (name String) ENGINE = MergeTree() ORDER BY name"
+			}
+			_, err = db.Exec(query)
 			if err != nil {
 				fmt.Println("Failed to create migration table:", err)
 				os.Exit(1)

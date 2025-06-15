@@ -1,8 +1,8 @@
 package dbox
 
 import (
-	"database/sql"
 	"fmt"
+	_ "github.com/ClickHouse/clickhouse-go/v2"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"os"
@@ -42,12 +42,12 @@ func Init(dbType, dsn string) {
 	input = strings.ToLower(input)
 	if input == "yes" {
 		if dbType == "cql" {
-			session, err := openCQLSession()
+			session, cleanup, err := cqlConn()
 			if err != nil {
 				fmt.Println("Failed to connect to db:", err)
 				os.Exit(1)
 			}
-			defer session.Close()
+			defer cleanup()
 
 			if err := session.Query(`CREATE TABLE IF NOT EXISTS migrations (name text PRIMARY KEY)`).Exec(); err != nil {
 				fmt.Println("Failed to create migration table:", err)
@@ -55,18 +55,22 @@ func Init(dbType, dsn string) {
 			}
 			fmt.Println("Migration records table created.")
 		} else {
-			db, err := sql.Open(dbType, dsn)
+			db, cleanup, err := sqlConn(dbType, dsn)
 			if err != nil {
 				fmt.Println("Failed to connect to db:", err)
 				os.Exit(1)
 			}
-			defer db.Close()
+			defer cleanup()
 
-			_, err = db.Exec(`
-                                CREATE TABLE IF NOT EXISTS migrations (
-                                    name VARCHAR(255) PRIMARY KEY
-                                )
-                        `)
+			query := `
+                               CREATE TABLE IF NOT EXISTS migrations (
+                                   name VARCHAR(255) PRIMARY KEY
+                               )
+                       `
+			if dbType == "clickhouse" {
+				query = "CREATE TABLE IF NOT EXISTS migrations (name String) ENGINE = MergeTree() ORDER BY name"
+			}
+			_, err = db.Exec(query)
 			if err != nil {
 				fmt.Println("Failed to create migration table:", err)
 				os.Exit(1)

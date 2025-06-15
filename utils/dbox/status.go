@@ -1,7 +1,6 @@
 package dbox
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 )
@@ -12,11 +11,12 @@ func Status(dbType, dsn string) {
 	applied := make(map[string]bool)
 
 	if dbType == "cql" {
-		session, err := openCQLSession()
+		session, cleanup, err := cqlConn()
 		if err != nil {
 			fmt.Println("Error opening database:", err)
 			os.Exit(1)
 		}
+		defer cleanup()
 
 		iter := session.Query("SELECT name FROM migrations").Iter()
 		var n string
@@ -25,17 +25,15 @@ func Status(dbType, dsn string) {
 		}
 		if err := iter.Close(); err != nil {
 			fmt.Println("Failed to fetch applied migrations:", err)
-			session.Close()
 			os.Exit(1)
 		}
-		session.Close()
 	} else {
-		db, err := sql.Open(dbType, dsn)
+		db, cleanup, err := sqlConn(dbType, dsn)
 		if err != nil {
 			fmt.Println("Error opening database:", err)
 			os.Exit(1)
 		}
-		defer db.Close()
+		defer cleanup()
 
 		rows, err := db.Query("SELECT name FROM migrations")
 		if err != nil {

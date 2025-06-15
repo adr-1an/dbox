@@ -1,7 +1,6 @@
 package dbox
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"strings"
@@ -21,7 +20,7 @@ func Clean(dbType, dsn string) {
 
 	var deleted int
 	if dbType == "cql" {
-		session, err := openCQLSession()
+		session, cleanup, err := cqlConn()
 		if err != nil {
 			fmt.Println("Failed to connect to DB:", err)
 			os.Exit(1)
@@ -35,7 +34,7 @@ func Clean(dbType, dsn string) {
 		}
 		if err := iter.Close(); err != nil {
 			fmt.Println("Failed to query migrations:", err)
-			session.Close()
+			cleanup()
 			os.Exit(1)
 		}
 
@@ -45,14 +44,14 @@ func Clean(dbType, dsn string) {
 			if os.IsNotExist(err) {
 				if err := session.Query("DELETE FROM migrations WHERE name = ?", name).Exec(); err != nil {
 					fmt.Println("Failed to delete migration record:", err)
-					session.Close()
+					cleanup()
 					os.Exit(1)
 				}
 				fmt.Println("Deleted:", name)
 				deleted++
 			}
 		}
-		session.Close()
+		cleanup()
 
 		if deleted > 0 {
 			word := "records"
@@ -67,12 +66,12 @@ func Clean(dbType, dsn string) {
 		return
 	}
 
-	db, err := sql.Open(dbType, dsn)
+	db, cleanup, err := sqlConn(dbType, dsn)
 	if err != nil {
 		fmt.Println("Failed to connect to DB:", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer cleanup()
 
 	// STEP 1: fetch all migration names into a slice
 	rows, err := db.Query("SELECT name FROM migrations")
